@@ -5,23 +5,21 @@ from pygame.math import Vector2
 
 class SNAKE:
     def __init__(self):
-        self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
+        """Initializes a new instance of the Snake class."""
+
+        self.body = [Vector2(5,10), Vector2(4,10), Vector2(3,10)]
         self.direction = Vector2(0,0)
         self.new_block = False
-
         self.head_up = pygame.image.load('Graphics/head_up.png').convert_alpha()
         self.head_down = pygame.image.load('Graphics/head_down.png').convert_alpha()
         self.head_right = pygame.image.load('Graphics/head_right.png').convert_alpha()
         self.head_left = pygame.image.load('Graphics/head_left.png').convert_alpha()
-
         self.tail_up = pygame.image.load('Graphics/tail_up.png').convert_alpha()
         self.tail_down = pygame.image.load('Graphics/tail_down.png').convert_alpha()
         self.tail_right = pygame.image.load('Graphics/tail_right.png').convert_alpha()
         self.tail_left = pygame.image.load('Graphics/tail_left.png').convert_alpha()
-
         self.body_vertical = pygame.image.load('Graphics/body_vertical.png').convert_alpha()
         self.body_horizontal = pygame.image.load('Graphics/body_horizontal.png').convert_alpha()
-
         self.body_tr = pygame.image.load('Graphics/body_tr.png').convert_alpha()
         self.body_tl = pygame.image.load('Graphics/body_tl.png').convert_alpha()
         self.body_br = pygame.image.load('Graphics/body_br.png').convert_alpha()
@@ -29,6 +27,7 @@ class SNAKE:
         self.crunch_sound = pygame.mixer.Sound('Sound/crunch.wav')
 
     def draw_snake(self):
+        """Draw the snake on the game screen based on its current state."""
         self.update_head_graphics()
         self.update_tail_graphics()
         for index, block in enumerate(self.body):
@@ -59,6 +58,7 @@ class SNAKE:
                 
 
     def update_head_graphics(self):
+        """Update the graphics for the snake's head based on its current movement direction."""
         head_relation = self.body[1] - self.body[0]
         if head_relation == Vector2(1,0):
             self.head = self.head_left
@@ -70,6 +70,7 @@ class SNAKE:
             self.head = self.head_down
     
     def update_tail_graphics(self):
+        """Update the graphics for the snake's tail based on the relationship between the last two body segments."""
         tail_relation = self.body[-2] - self.body[-1]
         if tail_relation == Vector2(1,0):
             self.tail = self.tail_left
@@ -81,6 +82,7 @@ class SNAKE:
             self.tail = self.tail_down
 
     def move_snake(self):
+        """Move the snake based on its current direction."""
         if self.new_block == True:
             body_copy = self.body[:]
             body_copy.insert(0,body_copy[0] + self.direction)
@@ -92,50 +94,59 @@ class SNAKE:
             self.body = body_copy[:]
     
     def add_block(self):
+        """Flag the addition of a new block to the snake."""
         self.new_block = True
 
     def play_crunch_sound(self):
+        """Play the crunch sound when the snake eats a block."""
         self.crunch_sound.play()
     
     def reset(self):
+        """Reset the snake's state to its initial configuration."""
         self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
         self.direction = Vector2(0,0)
 
 class FRUIT:    
     def __init__(self):
+        """Initialize a new instance of the Block class with a random position."""
         self.x = random.randint(0,cell_number - 1)
         self.y = random.randint(0,cell_number - 1)
         self.position = Vector2(self.x,self.y)
 
     def draw_fruit(self):
+        """Draw the fruit on the game screen at its current position."""
         x = int(self.position.x * cell_size)
         y = int(self.position.y * cell_size)
         fruit_rect = pygame.Rect(x, y, cell_size, cell_size)
         screen.blit(apple, fruit_rect)
-        # pygame.draw.rect(screen,(126,166,114),fruit_rect) 
 
     def randomize(self):
+        """Randomize the position of the fruit within the game grid."""
         self.x = random.randint(0,cell_number - 1)
         self.y = random.randint(0,cell_number - 1)
         self.position = Vector2(self.x,self.y)
 
 class MAIN:
     def __init__(self):
+        """Initialize a new instance of the MAIN class with instances of SNAKE and FRUIT."""
         self.snake = SNAKE()
         self.fruit = FRUIT()
     
     def update(self):
+        """Update the game state by moving the snake, checking for collisions, and handling failures."""
         self.snake.move_snake()
         self.check_collision()
         self.check_fail()
     
     def draw_elements(self):
+        """Draw the game elements on the screen, including the grass, fruit, snake, and score."""
         self.draw_grass()
         self.fruit.draw_fruit()
         self.snake.draw_snake() 
         self.draw_score()
     
     def check_collision(self):
+        """Check for collisions between the snake and the fruit."""
         if self.fruit.position == self.snake.body[0]:
             self.snake.play_crunch_sound()
             self.fruit.randomize()
@@ -145,6 +156,7 @@ class MAIN:
                 self.fruit.randomize()  # si daca il pune iar pe corpul sarpelui? bug
     
     def check_fail(self):
+        """Check for game failure conditions."""
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
             self.game_over()
         for block in self.snake.body[1:]:
@@ -152,9 +164,11 @@ class MAIN:
                 self.game_over()
 
     def game_over(self):
+        """Handle the game over state by resetting the snake's state."""
         self.snake.reset()
     
     def draw_grass(self):
+        """Draw the grass background on the game screen."""
         grass_color = (167,209,61)
         for row in range(cell_number):
             if row % 2 == 0:
@@ -169,6 +183,7 @@ class MAIN:
                         pygame.draw.rect(screen,grass_color,grass_rect)
     
     def draw_score(self):
+        """Draw the player's score on the game screen."""
         score_text = str(len(self.snake.body) - 3)
         score_surface = game_font.render(score_text,True,(56,74,12))
         score_x = int(cell_size * cell_number - 60)
@@ -199,6 +214,7 @@ pygame.time.set_timer(SCREEN_UPDATE,100)
 
 main_game = MAIN()
 
+# Main game loop: Handles events, updates the game state, and redraws the screen.
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
